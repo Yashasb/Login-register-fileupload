@@ -1,67 +1,47 @@
 var express = require('express');
 var router = express.Router();
 var firebase=require('firebase');
-var fileupload = require("express-fileupload");
-/* GET users listing. */
 var multer=require('multer');
-var multipart = require('connect-multiparty');
-var multipartMiddleware = multipart();
 
-var storage = multer.diskStorage({
+
+var store = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/')
-    },
+    }
+    ,
     filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now()+ '.png')
+        cb(null, file.fieldname)
     }
 })
 
-var upload = multer({ storage : storage });
+
+var upload = multer({ storage : store });
 
 
 var memoryStorage=require('multer');
-//import multer, {memoryStorage} from "multer";
 
-var storage=require('@google-cloud/storage');
+
+const Storage=require('@google-cloud/storage');
+const storage = new Storage({
+    projectId: 'login-app-b3320',
+    keyFilename:'./login-app-55494b6995e4.json'
+});
 
 //import storage from "@google-cloud/storage";
 
-var path=require('path');
+//var path=require('path');
 
 
 
-// Instantiate a storage client
 
-const googleCloudStorage = storage({
-
-    projectId:'login-app-b3320',
-
-    keyFilename:'C:/Users/Ganesha/Desktop/login/register/app.client_secret_320421664309-phc2icc6t30246kaan40950d9a1via4k.apps.googleusercontent.com'
-
-});
-
-
-
-const m = multer({
-
-    storage: memoryStorage(),
-
-    limits: {
-
-        fileSize: 5 * 1024 * 1024 // no larger than 5mb
+const ma = multer({storage: memoryStorage(), limits: {fileSize: 5 * 1024 * 1024 // no larger than 5mb
 
     }
 
 });
 
 
-
-
-// A bucket is a container for objects (files).
-
-const bucket = googleCloudStorage.bucket('login-app-b3320.appspot.com');
-
-
+const bucket = storage.bucket('login-app-b3320.appspot.com');
 
 
 router.get('/', function(req, res, next) {
@@ -76,7 +56,6 @@ router.post('/login', function(req, res, next) {
         res.render('welcome.html',{ title: 'Welcome '+user });
     }).
     catch(function(error) {
-        // Handle Errors here.
         var errorCode = error.code;
         var errorMessage = error.message;
         console.log(errorMessage);
@@ -91,23 +70,17 @@ router.post('/register', function(req, res, next) {
         res.send("both passwords should match!")
     }
     else{
-        //res.send('Hello ' + req.query.name +'! Lets upload a file')
         firebase.auth().createUserWithEmailAndPassword(req.body.email, req.body.pass).then(function()
         {
             res.send('Hello '+ req.body.name +" Registration succesful! Sign in..")
 
         }).
         catch(function(error) {
-            // Handle Errors here.
             var errorCode = error.code;
             var errorMessage = error.message;
             //console.log(errorCode)
             res.send('Hello ' + req.body.name + ' ' + errorMessage)
 
-
-
-
-            // ...
         });
     }
 
@@ -129,44 +102,33 @@ router.get('/googlelogin', function(req, res, next) {
 
     console.log('google signedin');
     res.render('welcome.html',{ title: 'Hello' });
-
-
-
+    
 });
 
-router.post("/upload",upload.single('file'), function(req, res, next){
 
-       // var title = req.file.title;
-       // var section = req.file.section;
-
-    //console.log(req.body, req.files);
-//console.log(title);
-            //if (req.file){
-
-
-                console.log("image saved successfully in local");
-                res.send("image saved successfully in local")
-
-                //upload to the GCloud
-               // bucket.upload(req.files, function(err, file) {
-                   // if (!err) {
-                       // console.log("image saved successfully in GCloud");
-
-                        //store image name in firebase
-                       // res.redirect("/upload");
-
-                   // }
-               // });
+router.post("/upload",upload.single('file'),function(req, res, next){
 
 
 
+console.log(req.file);
 
-           // }
-           // else {
-              //  console.log("No file uploaded");
-              //  res.redirect("/upload");
-           // }
+uploadFile('login-app-b3320.appspot.com',req.file.path);
+                console.log("image saved successfully in local"+req.file.path);
+                res.send("image saved successfully in google cloud");
 
     });
+
+function uploadFile(bucketName, filename) {
+
+    storage
+        .bucket(bucketName)
+        .upload(filename)
+        .then(function()  {
+        console.log(filename + 'uploaded to ' + bucketName);
+})
+.catch(function(err)  {
+        console.error('ERROR:', err);
+});
+}
 
 module.exports = router;
