@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title><%= title %></title>
+    <title>LIST</title>
 
 </head>
 <body bgcolor="#f0f8ff">
-<h1><%= title %></h1>
+<h1>LIST></h1>
 <form action="/users/signout" method="post" >
     <button type="submit"> SIGN OUT</button>
 </form>
 
 <h2> PLEASE UPLOAD YOUR FILE </h2>
 <p align="center">
-    <form action="\users\upload" method="post"
+<form action="\users\upload" method="post"
       enctype="multipart/form-data">
     <label for="file">Filename:</label>
     <br>
@@ -23,9 +23,18 @@
 </form>
 </p>
 
-<form action="/users/listfiles" method="post" >
-    <h1>RETRIEVE ALL FILES FROM CLOUD</h1>
-    <button type="submit"> RETRIEVE </button>
-</form>
+
+
+
+
+<script>
+    var arr='<%=array%>';
+    var j=arr.split(',');
+   // document.write('<br> <a>' + j[0] +'</a></br>');
+    for (var i=0;i<j.length;i++){
+    document.write('<br>' + '<a href='+ j[i]+'>'+j[i] +'</br>');
+}
+
+</script>
 </body>
 </html>

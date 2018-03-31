@@ -115,10 +115,17 @@ console.log(req.file);
 
 uploadFile('login-app-b3320.appspot.com',req.file.path);
                 console.log("image saved successfully in local"+req.file.path);
-                res.send("image saved successfully in google cloud");
+                res.render('welcome.html',{ title: 'Success' });
 
     });
+router.post('/listfiles', function(req, res, next) {
+    //res.send('Files List:');
 
+    listFiles('login-app-b3320.appspot.com',res);
+   // console.log(arr);
+   // res.send(arr);
+
+});
 function uploadFile(bucketName, filename) {
 
     storage
@@ -126,10 +133,40 @@ function uploadFile(bucketName, filename) {
         .upload(filename)
         .then(function()  {
         console.log(filename + 'uploaded to ' + bucketName);
+
+
 })
 .catch(function(err)  {
         console.error('ERROR:', err);
 });
+    storage
+        .bucket(bucketName).makePublic(filename.path).then(function() {console.log('made public')}).catch(function (error) { console.error(error) });
+}
+
+function listFiles(bucketName,res) {
+    var arr=[];
+    // Lists files in the bucket
+    storage
+        .bucket(bucketName)
+        .getFiles()
+        .then(function(results)  {const files = results[0];
+
+    console.log('Files:');
+    files.forEach(function(file)  {
+        console.log(file.name);
+        var name=file.name;
+        arr.push('https://storage.googleapis.com/login-app-b3320.appspot.com/'+name)}
+    );
+            console.log(arr);
+           // res.send(arr);
+            res.render('list.html',{array:arr });
+
+
+})
+.catch(function(err)  {
+        console.error('ERROR:', err);
+});
+    // [END storage_list_files]
 }
 
 module.exports = router;
