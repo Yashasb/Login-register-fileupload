@@ -10,7 +10,8 @@ var store = multer.diskStorage({
     }
     ,
     filename: function (req, file, cb) {
-        cb(null, file.fieldname)
+
+        cb(null, file.fieldname+'-' +Date.now())
     }
 })
 
@@ -102,7 +103,7 @@ router.get('/googlelogin', function(req, res, next) {
 
     console.log('google signedin');
     res.render('welcome.html',{ title: 'Hello' });
-    
+
 });
 
 
